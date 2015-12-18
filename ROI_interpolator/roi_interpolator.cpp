@@ -12,3 +12,10 @@ ROI_interpolator::~ROI_interpolator()
 {
 
 }
+
+void ROI_interpolator::addNewROI()
+{
+	int ID = ROI_inter->ID_edit->text().toInt();
+
+	int Frame = ROI_inter->ID_edit->text().toInt();
+}

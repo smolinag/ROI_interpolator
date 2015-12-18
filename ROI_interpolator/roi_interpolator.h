@@ -18,6 +18,10 @@ private:
 	Ui::ROI_interpolatorClass ui;
 	Ui_ROI_interpolatorClass *ROI_inter;
 
+	public slots:
+
+	void addNewROI();
+
 };
 
 #endif // ROI_INTERPOLATOR_H
