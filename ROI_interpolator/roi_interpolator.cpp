@@ -209,7 +209,10 @@ void ROI_interpolator::interpolateROI()
 void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int fID)
 {
 	QVector<KeyROI> interpROI_states;
-
+	int xc_int, yc_int, w_int, h_int;
+	int x0, y0, x1, y1;
+	double slope_x, slope_y, slope_w, slope_h;
+	
 	//Replicate input states until last
 	if (std::get<1>(prev).size() == 0 && std::get<1>(next).size() == 0)
 	{
@@ -228,10 +231,137 @@ void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int 
 		AllROIs.append(std::make_tuple(ID, label, interpROI_states));
 	}
 
-	//Linear interpolation until last
-	if (std::get<1>(prev).size() == 0 != std::get<1>(next).size() == 0)
+	//Linear interpolation until next or last
+	if (std::get<1>(prev).size() != 0)
 	{
+		//slope for x coordinate
+		y0 = std::get<1>(prev)[0];
+		y1 = std::get<1>(curr)[0];
+		x0 = std::get<0>(prev);
+		x1 = std::get<0>(curr);
+		slope_x = double(y1 - y0) / double(x1 - x0);
 
+		//slope for y coordinate
+		y0 = std::get<1>(prev)[1];
+		y1 = std::get<1>(curr)[1];
+		x0 = std::get<0>(prev);
+		x1 = std::get<0>(curr);
+		slope_y = double(y1 - y0) / double(x1 - x0);
+
+		//slope for width
+		y0 = std::get<1>(prev)[2];
+		y1 = std::get<1>(curr)[2];
+		x0 = std::get<0>(prev);
+		x1 = std::get<0>(curr);
+		slope_w = double(y1 - y0) / double(x1 - x0);
+
+		//slope for height
+		y0 = std::get<1>(prev)[3];
+		y1 = std::get<1>(curr)[3];
+		x0 = std::get<0>(prev);
+		x1 = std::get<0>(curr);
+		slope_h = double(y1 - y0) / double(x1 - x0);
+
+		//Get superior limit to replicate linear interpolation values
+		int lim_sup;
+		if (std::get<1>(next).size() == 0)
+			lim_sup = vid_length;
+		else
+			lim_sup = std::get<0>(next);
+
+		for (int i = 0; i < vid_length; i++)
+		{
+			if (i > std::get<0>(prev) && i < lim_sup)
+			{
+				//Interpolate x coordinate
+				y0 = std::get<1>(prev)[0];
+				xc_int = y0 + int(std::floor(double(i - x0)*slope_x));
+
+				//Interpolate y coordinate
+				y0 = std::get<1>(prev)[1];
+				yc_int = y0 + int(std::floor(double(i - x0)*slope_y));
+
+				//Interpolate width
+				y0 = std::get<1>(prev)[2];
+				w_int = y0 + int(std::floor(double(i - x0)*slope_w));
+
+				//Interpolate height
+				y0 = std::get<1>(prev)[3];
+				h_int = y0 + int(std::floor(double(i - x0)*slope_h));
+
+				QVector<int> st;
+				st.append(xc_int);
+				st.append(yc_int);
+				st.append(w_int);
+				st.append(h_int);
+
+				//Store new states according interpolation
+				std::get<2>(AllROIs[fID])[i] = std::make_tuple(i, st);
+			}
+		}
+	}
+
+	//Linear interpolation from current to next
+	if (std::get<1>(next).size() != 0)
+	{
+		//slope for x coordinate
+		y0 = std::get<1>(curr)[0];
+		y1 = std::get<1>(next)[0];
+		x0 = std::get<0>(curr);
+		x1 = std::get<0>(next);
+		slope_x = int(std::floor(double(y1 - y0) / double(x1 - x0)));
+
+		//slope for y coordinate
+		y0 = std::get<1>(curr)[1];
+		y1 = std::get<1>(next)[1];
+		x0 = std::get<0>(curr);
+		x1 = std::get<0>(next);
+		slope_y = int(std::floor(double(y1 - y0) / double(x1 - x0)));
+
+		//slope for width
+		y0 = std::get<1>(curr)[2];
+		y1 = std::get<1>(next)[2];
+		x0 = std::get<0>(curr);
+		x1 = std::get<0>(next);
+		slope_w = int(std::floor(double(y1 - y0) / double(x1 - x0)));
+
+		//slope for height
+		y0 = std::get<1>(curr)[3];
+		y1 = std::get<1>(next)[3];
+		x0 = std::get<0>(curr);
+		x1 = std::get<0>(next);
+		slope_h = int(std::floor(double(y1 - y0) / double(x1 - x0)));
+
+		for (int i = 0; i < vid_length; i++)
+		{
+			if (i > std::get<0>(curr) && i < std::get<0>(next))
+			{
+				//Interpolate x coordinate
+				y0 = std::get<1>(curr)[0];
+				xc_int = y0 + (i - x0)*slope_x;
+
+				//Interpolate y coordinate
+				y0 = std::get<1>(curr)[1];
+				yc_int = y0 + (i - x0)*slope_y;
+
+				//Interpolate width
+				y0 = std::get<1>(curr)[2];
+				w_int = y0 + (i - x0)*slope_w;
+
+				//Interpolate height
+				y0 = std::get<1>(curr)[3];
+				h_int = y0 + (i - x0)*slope_h;
+
+				QVector<int> st;
+				st.append(xc_int);
+				st.append(yc_int);
+				st.append(w_int);
+				st.append(h_int);
+
+				//Store new states according interpolation
+				std::get<2>(AllROIs[fID])[i] = std::make_tuple(i, st);
+			}
+		}
 	}
 }
 
