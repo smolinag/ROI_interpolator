@@ -14,6 +14,16 @@ ROI_interpolator::ROI_interpolator(QWidget *parent)
 	initializeTable();
 
 	connect(ROI_inter->addROI_button, SIGNAL(clicked()), this, SLOT(addNewROI()));
+
+	//Create delete ROI Dialog
+	deleteROI_dialog = new QDialog(this);
+	delete_ROI = new Ui_deleteROI_dialog();
+	delete_ROI->setupUi(deleteROI_dialog);
+
+	connect(ROI_inter->deleteROI_button, SIGNAL(clicked()), this, SLOT(deleteROI_execDialog()));
+
+	connect(delete_ROI->accept_button, SIGNAL(clicked()), this, SLOT(accept_deleteROI()));
+	connect(delete_ROI->cancel_button, SIGNAL(clicked()), this, SLOT(cancel_deleteROI()));
 }
 
 ROI_interpolator::~ROI_interpolator()
@@ -185,19 +195,30 @@ void ROI_interpolator::interpolateROI()
 		{
 			KROI_next = std::get<2>(KeyROIs[fID])[mindif_idx];
 
-			if (mindif_idx - 1 > 0)
+			if (mindif_idx - 1 >= 0)
 			{
-				KROI_prev = std::get<2>(KeyROIs[fID])[mindif_idx + 1];
+				KROI_prev = std::get<2>(KeyROIs[fID])[mindif_idx - 1];
 			}
 
 			//Insert new KROI
-			std::get<2>(KeyROIs[fID]).insert(mindif_idx - 1, newKROI);
+			std::get<2>(KeyROIs[fID]).insert(mindif_idx, newKROI);
 		}
 
 		//Current indexed ROI's frame is equal to a previous one
 		if (mindif == 0)
 		{
+			if (mindif_idx - 1 >= 0)
+			{
+				KROI_prev = std::get<2>(KeyROIs[fID])[mindif_idx - 1];
+			}
 
+			if (mindif_idx + 1 < std::get<2>(KeyROIs[fID]).size())
+			{
+				KROI_next = std::get<2>(KeyROIs[fID])[mindif_idx + 1];
+			}
+
+			//Replace KROI
+			std::get<2>(KeyROIs[fID])[mindif_idx] = newKROI;
 		}
 	}
 
@@ -208,6 +229,15 @@ void ROI_interpolator::interpolateROI()
 
 void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int fID)
 {
+	//Test
+	std::cout << std::endl << "New interpolation:" << std::endl;
+	if (std::get<1>(prev).size() != 0)
+		std::cout << "Prev=" << " f:" << std::get<0>(prev) << " x:" << std::get<1>(prev)[0] << " y:" << std::get<1>(prev)[1] << " w:" << std::get<1>(prev)[2] << " h:" << std::get<1>(prev)[3] << std::endl;
+	std::cout << "Curr=" << " f:" << std::get<0>(curr) << " x:" << std::get<1>(curr)[0] << " y:" << std::get<1>(curr)[1] << " w:" << std::get<1>(curr)[2] << " h:" << std::get<1>(curr)[3] << std::endl;
+	if (std::get<1>(next).size() != 0)
+		std::cout << "Next=" << " f:" << std::get<0>(next) << " x:" << std::get<1>(next)[0] << " y:" << std::get<1>(next)[1] << " w:" << std::get<1>(next)[2] << " h:" << std::get<1>(next)[3] << std::endl;
+	//-----
+
 	QVector<KeyROI> interpROI_states;
 	int xc_int, yc_int, w_int, h_int;
 	int x0, y0, x1, y1;
@@ -265,7 +295,7 @@ void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int 
 		//Get superior limit to replicate linear interpolation values
 		int lim_sup;
 		if (std::get<1>(next).size() == 0)
-			lim_sup = vid_length;
+			lim_sup = std::get<0>(curr);
 		else
 			lim_sup = std::get<0>(next);
 
@@ -297,6 +327,13 @@ void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int 
 
 				//Store new states according interpolation
 				std::get<2>(AllROIs[fID])[i] = std::make_tuple(i, st);
+			}
+
+			//Keep
+			if (i >= lim_sup && (std::get<1>(next).size() == 0))
+			{
+				//Store new states according interpolation
+				std::get<2>(AllROIs[fID])[i] = std::make_tuple(i, std::get<1>(curr));
 			}
 		}
 	}
@@ -334,7 +371,7 @@ void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int 
 
 		for (int i = 0; i < vid_length; i++)
 		{
-			if (i > std::get<0>(curr) && i < std::get<0>(next))
+			if (i >= std::get<0>(curr) && i < std::get<0>(next))
 			{
 				//Interpolate x coordinate
 				y0 = std::get<1>(curr)[0];
@@ -363,6 +400,100 @@ void ROI_interpolator::interpolation(KeyROI prev, KeyROI curr, KeyROI next, int 
 			}
 		}
 	}
+}
+
+void ROI_interpolator::deleteROI_execDialog()
+{
+	QString input;
+	bool valid_num;
+
+	//Set error message 
+	QMessageBox errorBox;
+	errorBox.setWindowTitle("Error");
+	errorBox.setIcon(QMessageBox::Icon::Critical);
+	errorBox.setDefaultButton(QMessageBox::Ok);
+
+	//Get ROI ID
+	input = ROI_inter->ID_edit->text();
+	valid_num = validateNumber(input);
+	if (valid_num)
+		delID = input.toInt();
+	else
+	{
+		errorBox.setText("Set a valid ROI ID");
+		errorBox.exec();
+	}
+
+	//Get ROI frame
+	input = ROI_inter->frame_edit->text();
+	valid_num = validateNumber(input);
+	if (valid_num)
+		delFrame = input.toInt();
+	else
+	{
+		errorBox.setText("Set a valid ROI frame");
+		errorBox.exec();
+	}
+
+	delete_ROI->delAll_radioButton->setChecked(true);
+	delete_ROI->delCurr_radioButton->setChecked(false);
+	deleteROI_dialog->exec();
+}
+
+void ROI_interpolator::accept_deleteROI()
+{
+	QVector<int> st(4, 0);
+
+	//Delete delFrame ROI and subsequent ROIs from ALLROIs
+	if (delete_ROI->delAll_radioButton->isChecked())
+	{
+		for (int i = delFrame; i < vid_length; i++)
+		{
+			std::get<2>(AllROIs[ID])[i] = std::make_tuple(i, st);
+		}
+
+		//Delete Key ROIs with frame bigger than delete point
+		for (int i = 0; i < KeyROIs.size(); i++)
+		{
+			if (std::get<0>(KeyROIs[i]) == delID)
+			{
+				for (int j = 0; j < std::get<2>(KeyROIs[i]).size(); j++)
+				{
+					if (std::get<0>(std::get<2>(KeyROIs[i])[j]) >= delFrame)
+						std::get<2>(KeyROIs[i]).erase(std::get<2>(KeyROIs[i]).begin() + j);
+				}
+				break;
+			}
+		}
+	}	
+	
+	//Delete only delFrame ROI from ALLROIs
+	if (delete_ROI->delCurr_radioButton->isChecked())
+	{
+		std::get<2>(AllROIs[ID])[frame] = std::make_tuple(frame, st);
+
+		//Delete Key ROI if found any in delFrame
+		for (int i = 0; i < KeyROIs.size(); i++)
+		{
+			if (std::get<0>(KeyROIs[i]) == delID)
+			{
+				for (int j = 0; j < std::get<2>(KeyROIs[i]).size(); j++)
+				{
+					if (std::get<0>(std::get<2>(KeyROIs[i])[j]) == delFrame)
+						std::get<2>(KeyROIs[i]).erase(std::get<2>(KeyROIs[i]).begin()+j);
+				}
+				break;
+			}
+		}
+	}
+
+	deleteROI_dialog->close();
+	updateTable();
+}
+
+void ROI_interpolator::cancel_deleteROI()
+{
+
 }
 
 bool ROI_interpolator::validateNumber(const QString &Input)
@@ -410,7 +541,7 @@ void ROI_interpolator::updateTable()
 
 	ROITable->setRowCount(NROI*vid_length);
 
-	std::cout << "x:" << states[0] << "y:" << states[1] << "w:" << states[2] << "h:" << states[3]<< std::endl;
+	//std::cout<< "frame:"<< frame << "x:" << states[0] << "y:" << states[1] << "w:" << states[2] << "h:" << states[3]<< std::endl;
 
 	for (int j = 0; j < NROI; j++)
 	{

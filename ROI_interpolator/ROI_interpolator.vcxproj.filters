@@ -61,9 +61,15 @@
     <CustomBuild Include="roi_interpolator.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="delete_roi.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_roi_interpolator.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_delete_roi.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>

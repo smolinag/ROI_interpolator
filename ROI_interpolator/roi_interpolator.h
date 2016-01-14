@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_roi_interpolator.h"
+#include "ui_delete_roi.h"
 #include <qmessagebox.h>
 #include <tuple>
 #include <iostream>
@@ -27,6 +28,9 @@ private:
 	Ui::ROI_interpolatorClass ui;
 	Ui_ROI_interpolatorClass *ROI_inter;
 
+	//Delete ROI Gui
+	QDialog *deleteROI_dialog;
+	Ui_deleteROI_dialog *delete_ROI;
 
 	int vid_length;
 	int NROI;
@@ -40,6 +44,10 @@ private:
 	int width;
 	int height;
 	QVector<int> states;
+
+	//Delete ROI parameters
+	int delID;
+	int delFrame;
 
 	KeyROI newKROI;
 
@@ -60,9 +68,11 @@ private:
 
 	void addNewROI();
 
-	
+	void deleteROI_execDialog();
 
+	void accept_deleteROI();
 
+	void cancel_deleteROI();
 };
 
 #endif // ROI_INTERPOLATOR_H

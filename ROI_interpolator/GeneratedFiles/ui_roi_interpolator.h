@@ -19,10 +19,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
@@ -34,7 +32,7 @@ class Ui_ROI_interpolatorClass
 {
 public:
     QWidget *centralWidget;
-    QWidget *verticalLayoutWidget;
+    QVBoxLayout *verticalLayout_5;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout_5;
     QGroupBox *groupBox;
@@ -65,12 +63,12 @@ public:
     QSpacerItem *horizontalSpacer;
     QPushButton *addROI_button;
     QSpacerItem *horizontalSpacer_2;
+    QPushButton *deleteROI_button;
+    QSpacerItem *horizontalSpacer_3;
     QHBoxLayout *horizontalLayout_6;
     QGroupBox *groupBox_2;
     QTableWidget *ROI_table;
-    QMenuBar *menuBar;
     QToolBar *mainToolBar;
-    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *ROI_interpolatorClass)
     {
@@ -79,18 +77,17 @@ public:
         ROI_interpolatorClass->resize(351, 413);
         centralWidget = new QWidget(ROI_interpolatorClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        verticalLayoutWidget = new QWidget(centralWidget);
-        verticalLayoutWidget->setObjectName(QStringLiteral("verticalLayoutWidget"));
-        verticalLayoutWidget->setGeometry(QRect(10, 0, 331, 361));
-        verticalLayout = new QVBoxLayout(verticalLayoutWidget);
+        verticalLayout_5 = new QVBoxLayout(centralWidget);
+        verticalLayout_5->setSpacing(6);
+        verticalLayout_5->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
+        verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(6);
-        verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setSpacing(6);
         horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
-        groupBox = new QGroupBox(verticalLayoutWidget);
+        groupBox = new QGroupBox(centralWidget);
         groupBox->setObjectName(QStringLiteral("groupBox"));
         verticalLayoutWidget_4 = new QWidget(groupBox);
         verticalLayoutWidget_4->setObjectName(QStringLiteral("verticalLayoutWidget_4"));
@@ -278,6 +275,15 @@ public:
 
         horizontalLayout_14->addItem(horizontalSpacer_2);
 
+        deleteROI_button = new QPushButton(verticalLayoutWidget_4);
+        deleteROI_button->setObjectName(QStringLiteral("deleteROI_button"));
+
+        horizontalLayout_14->addWidget(deleteROI_button);
+
+        horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_14->addItem(horizontalSpacer_3);
+
 
         verticalLayout_4->addLayout(horizontalLayout_14);
 
@@ -290,7 +296,7 @@ public:
         horizontalLayout_6 = new QHBoxLayout();
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setObjectName(QStringLiteral("horizontalLayout_6"));
-        groupBox_2 = new QGroupBox(verticalLayoutWidget);
+        groupBox_2 = new QGroupBox(centralWidget);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         ROI_table = new QTableWidget(groupBox_2);
         ROI_table->setObjectName(QStringLiteral("ROI_table"));
@@ -301,17 +307,13 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_6);
 
+
+        verticalLayout_5->addLayout(verticalLayout);
+
         ROI_interpolatorClass->setCentralWidget(centralWidget);
-        menuBar = new QMenuBar(ROI_interpolatorClass);
-        menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 351, 21));
-        ROI_interpolatorClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(ROI_interpolatorClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         ROI_interpolatorClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
-        statusBar = new QStatusBar(ROI_interpolatorClass);
-        statusBar->setObjectName(QStringLiteral("statusBar"));
-        ROI_interpolatorClass->setStatusBar(statusBar);
 
         retranslateUi(ROI_interpolatorClass);
 
@@ -329,6 +331,7 @@ public:
         label_4->setText(QApplication::translate("ROI_interpolatorClass", "Y", 0));
         label_6->setText(QApplication::translate("ROI_interpolatorClass", "H", 0));
         addROI_button->setText(QApplication::translate("ROI_interpolatorClass", "Add ROI", 0));
+        deleteROI_button->setText(QApplication::translate("ROI_interpolatorClass", "Delete ROI", 0));
         groupBox_2->setTitle(QApplication::translate("ROI_interpolatorClass", "ROI summary", 0));
     } // retranslateUi
 
